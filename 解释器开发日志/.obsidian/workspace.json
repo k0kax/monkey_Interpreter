@@ -13,7 +13,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "第0章/0_0 基础知识.md",
+                "file": "第一章 词法分析/1_2扩展语法单元和词法分析器.md",
                 "mode": "source",
                 "source": false
               }
@@ -85,7 +85,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "第0章/0_0 基础知识.md",
+                "file": "第一章 词法分析/1_2扩展语法单元和词法分析器.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -102,7 +102,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "第0章/0_0 基础知识.md",
+                "file": "第一章 词法分析/1_2扩展语法单元和词法分析器.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -125,7 +125,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "第0章/0_0 基础知识.md"
+                "file": "第一章 词法分析/1_2扩展语法单元和词法分析器.md"
               }
             }
           }
@@ -133,8 +133,7 @@
       }
     ],
     "direction": "horizontal",
-    "width": 300,
-    "collapsed": true
+    "width": 300
   },
   "left-ribbon": {
     "hiddenItems": {
@@ -146,10 +145,15 @@
       "command-palette:打开命令面板": false
     }
   },
-  "active": "431ee3276a77d8dc",
+  "active": "0d19779cddc5eb3f",
   "lastOpenFiles": [
-    "第0章",
+    "第一章 词法分析/1_1词法分析器.md",
+    "第一章 词法分析/1_2扩展语法单元和词法分析器.md",
+    "查漏补缺/1.go_map.md",
+    "第一章 词法分析/1_3 REPL.md",
+    "查漏补缺",
     "第0章/0_0 基础知识.md",
+    "第0章",
     "第一章 词法分析"
   ]
 }

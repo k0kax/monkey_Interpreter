@@ -10,6 +10,7 @@ type Token struct {
 	Literal string
 }
 
+// 声明一些词法常量
 const (
 	// 特殊类型
 	ILLEGAL = "ILLEGAL" // 未知字符
@@ -36,3 +37,17 @@ const (
 	FUNCTION = "FUNCTION"
 	LET      = "LET"
 )
+
+// 关键词表
+var keywords = map[string]TokenType{
+	"fn":  FUNCTION,
+	"let": LET,
+}
+
+// 通过关键词表判断给定的标识符是否是关键词
+func LookupIdent(ident string) TokenType {
+	if tok, ok := keywords[ident]; ok {
+		return tok
+	}
+	return IDENT
+}
