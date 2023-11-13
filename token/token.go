@@ -21,13 +21,19 @@ const (
 	INT   = "INT"   // 1343456
 
 	// 运算符
-	ASSIGN = "="
-	PLUS   = "+"
+	ASSIGN   = "="
+	PLUS     = "+"
+	MINUS    = "-"
+	BANG     = "!"
+	ASTERISK = "*"
+	SLASH    = "/"
 
 	// 分隔符
 	COMMA     = ","
 	SEMICOLON = ";"
 
+	LT     = "<"
+	GT     = ">"
 	LPAREN = "("
 	RPAREN = ")"
 	LBRACE = "{"
@@ -36,12 +42,23 @@ const (
 	// 关键字
 	FUNCTION = "FUNCTION"
 	LET      = "LET"
+	//*********
+	IF     = "IF"
+	ELSE   = "ELSE"
+	RETURN = "RETURN"
 )
+
+//！-/*5；
+//			5 < 10 > 5;
 
 // 关键词表
 var keywords = map[string]TokenType{
 	"fn":  FUNCTION,
 	"let": LET,
+	//*********
+	"if":     IF,
+	"else":   ELSE,
+	"return": RETURN,
 }
 
 // 通过关键词表判断给定的标识符是否是关键词

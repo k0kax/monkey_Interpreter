@@ -13,7 +13,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "第一章 词法分析/1_2扩展语法单元和词法分析器.md",
+                "file": "第一章 词法分析/1_4 REPL.md",
                 "mode": "source",
                 "source": false
               }
@@ -85,7 +85,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "第一章 词法分析/1_2扩展语法单元和词法分析器.md",
+                "file": "第一章 词法分析/1_4 REPL.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -102,7 +102,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "第一章 词法分析/1_2扩展语法单元和词法分析器.md",
+                "file": "第一章 词法分析/1_4 REPL.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -125,7 +125,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "第一章 词法分析/1_2扩展语法单元和词法分析器.md"
+                "file": "第一章 词法分析/1_4 REPL.md"
               }
             }
           }
@@ -147,10 +147,18 @@
   },
   "active": "0d19779cddc5eb3f",
   "lastOpenFiles": [
+    "第一章 词法分析/1_3扩展语法单元和词法分析器2.md",
     "第一章 词法分析/1_1词法分析器.md",
-    "第一章 词法分析/1_2扩展语法单元和词法分析器.md",
+    "第一章 词法分析/1_2扩展语法单元和词法分析器1.md",
+    "第一章 词法分析/1_4 REPL.md",
     "查漏补缺/1.go_map.md",
-    "第一章 词法分析/1_3 REPL.md",
+    "查漏补缺/2.fprintf.md",
+    "Pasted image 20231113220919.png.md",
+    "第一章 词法分析/img.png",
+    "Pasted image 20231113221319.png.md",
+    "Pasted image 20231113221542.png",
+    "Pasted image 20231113221319.png",
+    "Pasted image 20231113220919.png",
     "查漏补缺",
     "第0章/0_0 基础知识.md",
     "第0章",
