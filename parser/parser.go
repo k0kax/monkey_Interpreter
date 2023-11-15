@@ -2,6 +2,7 @@ package parser
 
 //语法分析器
 import (
+	"fmt"
 	"monkey_Interpreter/ast"
 	"monkey_Interpreter/lexer"
 	"monkey_Interpreter/token"
@@ -13,11 +14,15 @@ type Parser struct {
 
 	curToken  token.Token //当前词法单元
 	peekToken token.Token //当前词法单元的下一位
+
+	errors []string
 }
 
 // 实例化语法分析器
 func New(l *lexer.Lexer) *Parser {
-	p := &Parser{l: l} //语法分析器实例
+	p := &Parser{l: l,
+		errors: []string{},
+	} //语法分析器实例
 
 	//读取两个词法单元，以设置curToken和peekToken
 	p.nextToken()
@@ -97,6 +102,17 @@ func (p *Parser) expectPeek(t token.TokenType) bool {
 		p.nextToken()
 		return true
 	} else {
+		p.peekErrors(t)
 		return false
 	}
+}
+
+// 错误检测
+func (p *Parser) Errors() []string {
+	return p.errors
+}
+
+func (p *Parser) peekErrors(t token.TokenType) {
+	msg := fmt.Sprintf("expected next token to be %s,got%s instead", t, p.peekToken.Type)
+	p.errors = append(p.errors, msg)
 }

@@ -7,9 +7,9 @@ import (
 )
 
 func TestLetStatements(t *testing.T) {
-	input := `let x = 5;
-			let y = 10;
-			let foobar = 838383;`
+	input := `let x 5;
+let = 10;
+let 838 383;`
 	l := lexer.New(input) //词词法分析器实例
 	p := New(l)           //语法解析器
 
