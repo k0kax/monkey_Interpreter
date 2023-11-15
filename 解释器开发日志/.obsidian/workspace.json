@@ -13,7 +13,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "第2章 语法分析/2_1 解析let语句.md",
+                "file": "第2章 语法分析/2_2 添加错误检测.md",
                 "mode": "source",
                 "source": false
               }
@@ -85,7 +85,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "第2章 语法分析/2_1 解析let语句.md",
+                "file": "第2章 语法分析/2_2 添加错误检测.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -102,7 +102,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "第2章 语法分析/2_1 解析let语句.md",
+                "file": "第2章 语法分析/2_2 添加错误检测.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -125,7 +125,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "第2章 语法分析/2_1 解析let语句.md"
+                "file": "第2章 语法分析/2_2 添加错误检测.md"
               }
             }
           }
@@ -147,8 +147,9 @@
   },
   "active": "0d19779cddc5eb3f",
   "lastOpenFiles": [
-    "第1章 词法分析/1_2扩展语法单元和词法分析器1.md",
     "第2章 语法分析/2_1 解析let语句.md",
+    "第2章 语法分析/2_2 添加错误检测.md",
+    "第1章 词法分析/1_2扩展语法单元和词法分析器1.md",
     "第1章 词法分析/1_3扩展语法单元和词法分析器2.md",
     "第1章 词法分析/1_1词法分析器.md",
     "第1章 词法分析/1_4 REPL.md",

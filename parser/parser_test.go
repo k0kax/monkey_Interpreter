@@ -44,6 +44,7 @@ let 838 383;`
 	}
 }
 
+// 错误检查
 func checkParseErrors(t *testing.T, p *Parser) {
 	errors := p.Errors()
 	if len(errors) == 0 {
