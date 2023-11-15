@@ -14,7 +14,7 @@ let 838 383;`
 	p := New(l)           //语法解析器
 
 	program := p.ParseProgram() //解析程序，并将返回的抽象语法树（AST）存储在变量program中
-
+	checkParseErrors(t, p)
 	//非空检查
 	if program == nil {
 		t.Fatalf("ParseProgram() returned nil")
@@ -42,6 +42,20 @@ let 838 383;`
 			return
 		}
 	}
+}
+
+func checkParseErrors(t *testing.T, p *Parser) {
+	errors := p.Errors()
+	if len(errors) == 0 {
+		return
+	}
+
+	t.Errorf("parse has %d errors", len(errors))
+	for _, msg := range errors {
+		t.Errorf("parse error:%q", msg)
+	}
+	t.FailNow()
+
 }
 
 // 测试let语句的断言 期望字面量名称
