@@ -51,7 +51,7 @@ const (
 //！-/*5；
 //			5 < 10 > 5;
 
-// 关键词表
+// 关键词表 哈希表
 var keywords = map[string]TokenType{
 	"fn":  FUNCTION,
 	"let": LET,
