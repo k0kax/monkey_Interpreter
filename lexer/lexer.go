@@ -9,8 +9,8 @@ import (
 
 type Lexer struct {
 	input        string // 输入
-	position     int    // 输入的字符串中的当前位置(指向当前字符)
-	readPosition int    // 输入的字符串中的当前读取位置(指向当前字符串之后的一个字符(ch))
+	position     int    // 输入的字符串中的当前位置 (指向当前字符)
+	readPosition int    // 输入的字符串中的当前读取位置 (指向当前字符之后的一个字符(ch))
 	ch           byte   // 当前正在查看的字符
 }
 
@@ -21,15 +21,16 @@ func New(input string) *Lexer {
 	return l
 }
 
-// 读取下一个字符
+// 读取input的下一个字符，并前移其在input中的位置
+// 检查是否到到input的结尾
 func (l *Lexer) readChar() {
-	if l.readPosition >= len(l.input) { //如果下一个字符的长度大于l.input长度，也就是下一个字符再input末尾
-		l.ch = 0 // NUL的ASSII码(0)
+	if l.readPosition >= len(l.input) { //下一个要读取的字符位置大于，整个输入字符串的长度，已经读到输入的末尾
+		l.ch = 0 // NUL的ASSII码(0)，表示尚未读取任何内容或文件结尾
 	} else {
-		// 读取
+		//未到input结尾，将l.ch置为下一个字符
 		l.ch = l.input[l.readPosition]
 	}
-	// 前移
+	// 字符向前移
 	l.position = l.readPosition
 	l.readPosition += 1
 }
@@ -46,7 +47,7 @@ func newToken(tokenType token.TokenType, ch byte) token.Token {
 func (l *Lexer) NextToken() token.Token {
 	var tok token.Token
 
-	l.skipWhitespace()
+	l.skipWhitespace() //跳过空格和一些
 
 	switch l.ch {
 	case '=':
@@ -85,7 +86,7 @@ func (l *Lexer) NextToken() token.Token {
 		tok.Type = token.EOF
 
 	default:
-		if isLetter(l.ch) {
+		if isLetter(l.ch) { //判断是否是字母
 			tok.Literal = l.readIdentifier()
 			tok.Type = token.LookupIdent(tok.Literal)
 			return tok
