@@ -46,6 +46,10 @@ const (
 	IF     = "IF"
 	ELSE   = "ELSE"
 	RETURN = "RETURN"
+
+	//比较运算符
+	EQ     = "=="
+	NOT_EQ = "!="
 )
 
 //！-/*5；

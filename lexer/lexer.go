@@ -24,7 +24,7 @@ func New(input string) *Lexer {
 // 读取input的下一个字符，并前移其在input中的位置
 // 检查是否到到input的结尾
 func (l *Lexer) readChar() {
-	if l.readPosition >= len(l.input) { //下一个要读取的字符位置大于，整个输入字符串的长度，已经读到输入的末尾
+	if l.readPosition >= len(l.input) { //下一个要读取的字符位置大于整个输入字符串的长度，已经读到输入的末尾
 		l.ch = 0 // NUL的ASSII码(0)，表示尚未读取任何内容或文件结尾
 	} else {
 		//未到input结尾，将l.ch置为下一个字符
@@ -43,7 +43,7 @@ func newToken(tokenType token.TokenType, ch byte) token.Token {
 	}
 }
 
-// 根据当前的ch创建词法单元
+// 根据当前的ch创建词法单元，匹配对应的Type和字面量Literal
 func (l *Lexer) NextToken() token.Token {
 	var tok token.Token
 
@@ -51,7 +51,14 @@ func (l *Lexer) NextToken() token.Token {
 
 	switch l.ch {
 	case '=':
-		tok = newToken(token.ASSIGN, l.ch)
+		if l.peekChar() == '=' { //特殊处理 等于==
+			ch := l.ch
+			l.readChar()
+			literal := string(ch) + string(l.ch)
+			tok = token.Token{Type: token.EQ, Literal: literal}
+		} else {
+			tok = newToken(token.ASSIGN, l.ch)
+		}
 	case ';':
 		tok = newToken(token.SEMICOLON, l.ch)
 	case '(':
@@ -69,7 +76,14 @@ func (l *Lexer) NextToken() token.Token {
 	//！-/*5；
 	//			5 < 10 > 5;
 	case '!':
-		tok = newToken(token.BANG, l.ch)
+		if l.peekChar() == '=' { //特殊处理 不等于！=
+			ch := l.ch //获取当前字符
+			l.readChar()
+			literal := string(ch) + string(l.ch) //！=
+			tok = token.Token{Type: token.NOT_EQ, Literal: literal}
+		} else {
+			tok = newToken(token.BANG, l.ch)
+		}
 	case '-':
 		tok = newToken(token.MINUS, l.ch)
 	case '*':
@@ -85,12 +99,13 @@ func (l *Lexer) NextToken() token.Token {
 		tok.Literal = ""
 		tok.Type = token.EOF
 
+	//检查是否是标识符
 	default:
 		if isLetter(l.ch) { //判断是否是字母
-			tok.Literal = l.readIdentifier()
-			tok.Type = token.LookupIdent(tok.Literal)
+			tok.Literal = l.readIdentifier()          //字面量indent
+			tok.Type = token.LookupIdent(tok.Literal) //检查关键字
 			return tok
-		} else if isDigit(l.ch) {
+		} else if isDigit(l.ch) { //检查是否是数字
 			tok.Type = token.INT
 			tok.Literal = l.readNumber()
 			return tok
@@ -108,9 +123,9 @@ func (l *Lexer) NextToken() token.Token {
 func (l *Lexer) readIdentifier() string {
 	position := l.position
 	for isLetter(l.ch) {
-		l.readChar() //读下一个字符
+		l.readChar() //读下一个字符 不断后移l.positionS
 	}
-	return l.input[position:l.position]
+	return l.input[position:l.position] //截取输出字符串 完整的标识符ident
 }
 
 // 判断给定的参数是否为字母
@@ -139,4 +154,13 @@ func (l *Lexer) readNumber() string {
 // 判断是否是数字
 func isDigit(ch byte) bool {
 	return '0' <= ch && ch <= '9'
+}
+
+// 多字符匹配 检测下一个字符
+func (l *Lexer) peekChar() byte {
+	if l.readPosition >= len(l.input) { //l.readPosition字段（此时字符的位置）大于输入的长度，代表已经读完
+		return 0
+	} else {
+		return l.input[l.readPosition] //返回下一个字符的位置（string位置是从0开始的）
+	}
 }

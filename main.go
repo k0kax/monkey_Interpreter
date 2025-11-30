@@ -4,12 +4,12 @@ import (
 	"fmt"
 	"monkey_Interpreter/repl"
 	"os"
-	user2 "os/user"
+	"os/user"
 )
 
 func main() {
-	//在 main 函数内部，首先使用 os/user 包中的 user2.Current() 函数获取当前用户的信息
-	user, err := user2.Current()
+	//在 main 函数内部，首先使用 os/user 包中的 user.Current() 函数获取当前用户的信息
+	user, err := user.Current()
 	if err != nil {
 		panic(err)
 	}

@@ -15,7 +15,7 @@ type Parser struct {
 	curToken  token.Token //当前词法单元
 	peekToken token.Token //当前词法单元的下一位
 
-	errors []string
+	errors []string //错误集合
 }
 
 // 实例化语法分析器
@@ -36,19 +36,21 @@ func (p *Parser) nextToken() {
 	p.peekToken = p.l.NextToken() //递归
 }
 
-// 解析程序语法
+// 入口点
+// 解析程序AST语法
 func (p *Parser) ParseProgram() *ast.Program {
 
-	program := &ast.Program{}
-	program.Statements = []ast.Statement{} //切片
+	program := &ast.Program{}              //声明ast根节点program
+	program.Statements = []ast.Statement{} //语句接口切片集
 
-	for p.curToken.Type != token.EOF {
-		stmt := p.parseStatement()
+	for p.curToken.Type != token.EOF { //碰到词法法单元Token EOF文件结尾 表示已将遍历完终止
+		stmt := p.parseStatement() //解析具体语法
 		if stmt != nil {
 			program.Statements = append(program.Statements, stmt)
 		}
 		p.nextToken() //下移
 	}
+
 	return program
 }
 
