@@ -46,6 +46,8 @@ const (
 	IF     = "IF"
 	ELSE   = "ELSE"
 	RETURN = "RETURN"
+	TRUE   = "TRUE"
+	FALSE  = "FALSE"
 
 	//比较运算符
 	EQ     = "=="
@@ -63,6 +65,9 @@ var keywords = map[string]TokenType{
 	"if":     IF,
 	"else":   ELSE,
 	"return": RETURN,
+
+	"true":  TRUE,
+	"false": FALSE,
 }
 
 // 通过关键词表判断给定的标识符是否是关键词
