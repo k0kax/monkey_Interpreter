@@ -58,6 +58,7 @@ var precedences = map[token.TokenType]int{
 	token.MINUS:    SUM, //-
 	token.SLASH:    PRODUCT,
 	token.ASTERISK: PRODUCT,
+	token.LPAREN:   CALL,
 }
 
 // 实例化语法分析器
@@ -89,16 +90,21 @@ func New(l *lexer.Lexer) *Parser {
 	p.registerInfix(token.LT, p.parseInfixExpression)       //注册<的解析函数
 	p.registerInfix(token.GT, p.parseInfixExpression)       //注册>的解析函数
 
-	//布尔型字面量
+	//布尔型字面量 前缀表达式
 	p.registerPrefix(token.TRUE, p.parseBoolean)
 	p.registerPrefix(token.FALSE, p.parseBoolean)
 
-	//分组表达式()
+	//分组表达式() 前缀表达式
 	p.registerPrefix(token.LPAREN, p.parseGroupedExpression)
 
-	//解析if语句
+	//解析if语句 前缀表达式
 	p.registerPrefix(token.IF, p.parseIfExpression)
 
+	//解析函数字面量 前缀表达式
+	p.registerPrefix(token.FUNCTION, p.parseFunctionLiteral)
+
+	//解析调用函数表达式
+	p.registerInfix(token.LPAREN, p.parseCallExpression) //以左括号为中心，注册一个中缀表达式
 	return p
 }
 
@@ -166,6 +172,9 @@ func (p *Parser) parseLetStatement() *ast.LetStatement {
 
 	//5.TODO: 跳过对表达式的处理parseExpression()
 	//运行后：stmt.token=let curtoken="5" peektoken = ";"  stmt.Name=&{Token: IDENT("x"), Value: "x"} tmt.Value = &IntegerLiteral {Token: INT ("5"), Value: 5}
+	p.nextToken()
+
+	stmt.Value = p.parseExpression(LOWEST)
 
 	//6.检测分号（;）     处理语句末尾的分号（;）
 	//检测当前token（curtoken）是否是分号（;）
@@ -186,6 +195,8 @@ func (p *Parser) parseReturnStatement() *ast.ReturnStatement {
 	p.nextToken()
 
 	//TODO:跳过对表达式的处理，直接遇到分号
+	stmt.ReturnValue = p.parseExpression(LOWEST)
+
 	for !p.curTokenIs(token.SEMICOLON) {
 		p.nextToken()
 	}
@@ -388,37 +399,41 @@ func (p *Parser) parseIfExpression() ast.Expression {
 	expression := &ast.IfExpression{Token: p.curToken}
 
 	//if部分
-	if !p.expectPeek(token.LPAREN) {
+	//识别条件
+	if !p.expectPeek(token.LPAREN) { //下一个token是左括号(，移动token，继续，进入条件识别；不是则直接退出
 		return nil
 	}
 
-	p.nextToken()
-	expression.Condition = p.parseExpression(LOWEST)
+	p.nextToken()                                    //token移动开始识别条件
+	expression.Condition = p.parseExpression(LOWEST) //低权限识别条件，并写入条件中
 
-	if !p.expectPeek(token.RPAREN) {
+	if !p.expectPeek(token.RPAREN) { //下一个token是右括号)，移动token，继续，表明条件结束
 		return nil
 	}
 
-	if !p.expectPeek(token.LBRACE) {
+	//识别结果
+	if !p.expectPeek(token.LBRACE) { //下一个token是左大括号{，移动token，继续，开始进行结果识别；不是则直接退出
 		return nil
 	}
 
+	//写入结果
 	expression.Consequence = p.parseBlockStatement()
 
 	//else部分
-	if p.peekTokenIs(token.ELSE) {
-		p.nextToken()
+	if p.peekTokenIs(token.ELSE) { //识别下一个token是else,进入else的判断；不是则直接退出
+		p.nextToken() //后移token 匹配到真正的
 
-		if !p.expectPeek(token.LBRACE) {
+		if !p.expectPeek(token.LBRACE) { //识别下一个token是左大括号{
 			return nil
 		}
 
-		expression.Alternative = p.parseBlockStatement()
+		expression.Alternative = p.parseBlockStatement() //写入可替换结果
 	}
 
 	return expression
 }
 
+// 解析块
 func (p *Parser) parseBlockStatement() *ast.BlockStatement {
 	block := &ast.BlockStatement{Token: p.curToken}
 	block.Statements = []ast.Statement{}
@@ -435,4 +450,87 @@ func (p *Parser) parseBlockStatement() *ast.BlockStatement {
 	}
 
 	return block
+}
+
+// 解析函数字面量
+func (p *Parser) parseFunctionLiteral() ast.Expression {
+	lit := &ast.FunctionLiteral{Token: p.curToken}
+	//开始解析参数
+	if !p.expectPeek(token.LPAREN) { //识别左括号(
+		return nil
+	}
+	//解析参数
+	lit.Parameters = p.parseFunctionParameters()
+
+	if !p.expectPeek(token.LBRACE) { //识别右括号)
+		return nil
+	}
+	//解析参数结束
+
+	//解析函数体
+	lit.Body = p.parseBlockStatement()
+
+	return lit
+}
+
+// 解析函数字面量里的参数
+func (p *Parser) parseFunctionParameters() []*ast.Identifier {
+	identifiers := []*ast.Identifier{}
+
+	if p.peekTokenIs(token.RPAREN) { //如果识别到下一个token是右括号则，解析参数结束。
+		p.nextToken()
+		return identifiers
+	}
+
+	p.nextToken()
+
+	//识别第一个参数
+	ident := &ast.Identifier{Token: p.curToken, Value: p.curToken.Literal}
+	identifiers = append(identifiers, ident)
+
+	for p.peekTokenIs(token.COMMA) { //遇到的下一个token是逗号,说明有多个参数，开始识别多个参数
+		p.nextToken()
+		p.nextToken() //跳过逗号，将新参数写入参数切片
+		ident := &ast.Identifier{Token: p.curToken, Value: p.curToken.Literal}
+		identifiers = append(identifiers, ident)
+	}
+	//识别所有参数结束
+
+	if !p.expectPeek(token.RPAREN) { //下一个token是右括号)，则下移token，返回所有参数
+		return nil
+	}
+
+	return identifiers
+}
+
+// 解析函数：调用函数表达式
+func (p *Parser) parseCallExpression(function ast.Expression) ast.Expression {
+	exp := &ast.CallExpression{Token: p.curToken, Function: function}
+	exp.Arguments = p.parseCallArguments()
+	return exp
+}
+
+// 解析函数调用的各个参数
+func (p *Parser) parseCallArguments() []ast.Expression {
+	args := []ast.Expression{}
+
+	if p.peekTokenIs(token.RPAREN) { //下一个token是右括号，说明解析完所有参数
+		p.nextToken()
+		return args
+	}
+
+	p.nextToken()
+	args = append(args, p.parseExpression(LOWEST))
+
+	for p.peekTokenIs(token.COMMA) {
+		p.nextToken()
+		p.nextToken()
+		args = append(args, p.parseExpression(LOWEST))
+	}
+
+	if !p.expectPeek(token.RPAREN) { //下一个token是右括号，说明解析完所有参数，并后移一位
+		return nil
+	}
+
+	return args
 }

@@ -6,10 +6,22 @@ import (
 	"fmt"
 	"io"
 	"monkey_Interpreter/lexer"
-	"monkey_Interpreter/token"
+	"monkey_Interpreter/parser"
 )
 
 const PROMPT = ">>" //表示 REPL 提示符
+const MONKEY_FACE = `            __,__
+   .--.  .-"     "-.  .--.
+  / .. \/  .-. .-.  \/ .. \
+ | |  '|  /   Y   \  |'  | |
+ | \   \  \ 0 | 0 /  /   / |
+  \ '- ,\.-"""""""-./, -' /
+   ''-' /_   ^ ^   _\ '-''
+       |  \._   _./  |
+       \   \ '~' /   /
+        '._ '-=-' _.'
+           '-----'
+`
 
 // 函数接受输入流 in 和输出流 out 作为参数
 func Start(in io.Reader, out io.Writer) {
@@ -34,9 +46,27 @@ func Start(in io.Reader, out io.Writer) {
 		//创建了一个 lexer.Lexer 对象 l，并使用用户输入的文本作为输入来初始化该对象
 		l := lexer.New(line)
 
-		//进入一个循环，每次迭代中调用 l.NextToken() 方法来获取下一个词法单元，并将其输出到输出流 out
-		for tok := l.NextToken(); tok.Type != token.EOF; tok = l.NextToken() {
-			fmt.Fprintf(out, "%+v\n", tok)
+		//语法解析
+		p := parser.New(l)
+		program := p.ParseProgram()
+
+		if len(p.Errors()) != 0 {
+			printParserErrors(out, p.Errors())
+			continue
 		}
+
+		io.WriteString(out, program.String())
+		io.WriteString(out, "\n")
+
+	}
+}
+
+// 写入错误
+func printParserErrors(out io.Writer, errors []string) {
+	io.WriteString(out, MONKEY_FACE)
+	io.WriteString(out, "Woops! We ran into some monkey business here!\n")
+	io.WriteString(out, " parser errors:\n")
+	for _, msg := range errors {
+		io.WriteString(out, "\t"+msg+"\n")
 	}
 }
