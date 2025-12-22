@@ -220,7 +220,7 @@ func (ie *IfExpression) String() string {
 	out.WriteString(ie.Consequence.String())
 
 	if ie.Alternative != nil {
-		out.WriteString("else")
+		out.WriteString(" else ")
 		out.WriteString(ie.Alternative.String())
 	}
 
@@ -247,12 +247,13 @@ func (bs *BlockStatement) String() string {
 
 // -------------------------------------------函数字面量-----------------------------------
 type FunctionLiteral struct {
-	Token      token.Token //fn词法单元
-	Parameters []*Identifier
-	Body       *BlockStatement
+	Token      token.Token     //fn词法单元
+	Parameters []*Identifier   //形参列表
+	Body       *BlockStatement //函数体
 }
 
-func (fl *FunctionLiteral) expressionNode()      {}
+// 实现expression接口
+func (fl *FunctionLiteral) expressionNode()      {} //函数也是一种表达式，可赋值给变量
 func (fl *FunctionLiteral) TokenLiteral() string { return fl.Token.Literal }
 func (fl *FunctionLiteral) String() string {
 	var out bytes.Buffer
@@ -271,11 +272,11 @@ func (fl *FunctionLiteral) String() string {
 	return out.String()
 }
 
-// -----------------------------------------------调用表达式-----------------------------
+// -----------------------------------------------表达式（函数）调用-----------------------------
 type CallExpression struct {
-	Token     token.Token //(词法单元
-	Function  Expression
-	Arguments []Expression
+	Token     token.Token  //(词法单元
+	Function  Expression   //被调用的函数（可以是标识符或函数字面量）
+	Arguments []Expression //实参列表
 }
 
 func (ce *CallExpression) expressionNode()      {}

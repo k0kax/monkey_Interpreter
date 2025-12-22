@@ -122,7 +122,7 @@ func (p *Parser) ParseProgram() *ast.Program {
 	program.Statements = []ast.Statement{} //语句接口切片集
 
 	for p.curToken.Type != token.EOF { //碰到词法法单元Token EOF文件结尾 表示已将遍历完终止
-		stmt := p.parseStatement() //解析具体语法
+		stmt := p.parseStatement() //解析具体句子
 		if stmt != nil {
 			program.Statements = append(program.Statements, stmt) //不断解析语句，并且存到statements切片中
 		}

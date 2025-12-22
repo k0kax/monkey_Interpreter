@@ -5,7 +5,9 @@ import (
 	"bufio"
 	"fmt"
 	"io"
+	"monkey_Interpreter/evaluator"
 	"monkey_Interpreter/lexer"
+	"monkey_Interpreter/object"
 	"monkey_Interpreter/parser"
 )
 
@@ -28,6 +30,7 @@ func Start(in io.Reader, out io.Writer) {
 
 	//在函数内部，创建了一个 bufio.Scanner 对象 scanner，用于从输入流中读取用户输入
 	scanner := bufio.NewScanner(in)
+	env := object.NewEnvironment()
 
 	for {
 		//使用 fmt.Fprintf 函数将提示符输出到输出流 out
@@ -55,9 +58,11 @@ func Start(in io.Reader, out io.Writer) {
 			continue
 		}
 
-		io.WriteString(out, program.String())
-		io.WriteString(out, "\n")
-
+		evaluated := evaluator.Eval(program, env)
+		if evaluated != nil {
+			io.WriteString(out, evaluated.Inspect())
+			io.WriteString(out, "\n")
+		}
 	}
 }
 
