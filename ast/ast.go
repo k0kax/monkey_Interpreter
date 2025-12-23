@@ -209,6 +209,20 @@ type IfExpression struct {
 	Alternative *BlockStatement
 }
 
+type IfExpression struct {
+	Token           token.Token
+	Condition       Expression
+	Consequence     *BlockStatement
+	Alternative     []*ElseIfExpression
+	LastAlternative *BlockStatement
+}
+
+type ElseIfExpression struct {
+	Token       token.Token
+	Condition   Expression
+	Consequence *BlockStatement
+}
+
 func (ie *IfExpression) expressionNode()      {}
 func (ie *IfExpression) TokenLiteral() string { return ie.Token.Literal }
 func (ie *IfExpression) String() string {
@@ -296,3 +310,13 @@ func (ce *CallExpression) String() string {
 
 	return out.String()
 }
+
+// 字符串
+type StringLiteral struct {
+	Token token.Token
+	Value string
+}
+
+func (sl *StringLiteral) expressionNode()      {}
+func (sl *StringLiteral) TokenLiteral() string { return sl.Token.Literal }
+func (sl *StringLiteral) String() string       { return sl.Token.Literal }

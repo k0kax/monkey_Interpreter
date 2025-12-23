@@ -40,6 +40,7 @@ type Parser struct {
 const (
 	_ int = iota
 	LOWEST
+	AND         //&&与
 	EQUALS      //==
 	LESSGREATER //> or <
 	SUM         //+
@@ -50,14 +51,16 @@ const (
 
 // 优先级表
 var precedences = map[token.TokenType]int{
+	token.AND:      AND, //逻辑与
+	token.OR:       AND, //逻辑或
 	token.EQ:       EQUALS,
 	token.NOT_EQ:   EQUALS,
-	token.LT:       LESSGREATER,
-	token.GT:       LESSGREATER,
-	token.PLUS:     SUM, //+
-	token.MINUS:    SUM, //-
-	token.SLASH:    PRODUCT,
-	token.ASTERISK: PRODUCT,
+	token.LT:       LESSGREATER, //<
+	token.GT:       LESSGREATER, //>
+	token.PLUS:     SUM,         //+
+	token.MINUS:    SUM,         //-
+	token.SLASH:    PRODUCT,     //除/
+	token.ASTERISK: PRODUCT,     //*
 	token.LPAREN:   CALL,
 }
 
@@ -105,6 +108,13 @@ func New(l *lexer.Lexer) *Parser {
 
 	//解析调用函数表达式
 	p.registerInfix(token.LPAREN, p.parseCallExpression) //以左括号为中心，注册一个中缀表达式
+
+	//解析字符串表达式
+	p.registerPrefix(token.STRING, p.parseStringLiteral)
+
+	//解析逻辑运算符
+	p.registerInfix(token.AND, p.parseInfixExpression)
+	p.registerInfix(token.OR, p.parseInfixExpression)
 	return p
 }
 
@@ -533,4 +543,9 @@ func (p *Parser) parseCallArguments() []ast.Expression {
 	}
 
 	return args
+}
+
+// 解析函数 字符串
+func (p *Parser) parseStringLiteral() ast.Expression {
+	return &ast.StringLiteral{Token: p.curToken, Value: p.curToken.Literal}
 }

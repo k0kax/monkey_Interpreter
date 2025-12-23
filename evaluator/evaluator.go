@@ -104,6 +104,8 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 		//调用函数，并传入求值后得到的实参
 		return applyFunction(function, args)
 
+	case *ast.StringLiteral:
+		return &object.String{Value: node.Value}
 	}
 
 	return nil
@@ -183,9 +185,27 @@ func evalInfixExpression(operator string, left, right object.Object) object.Obje
 	case operator == "!=":
 		return nativeBoolToBooleanObject(left != right)
 
-	case left.Type() != right.Type():
+	case operator == "&&":
+		// 左值为假则直接返回左值
+		if !isTruthy(left) {
+			return left
+		}
+		// 左值为真则返回右值
+		return right
+	case operator == "||":
+		// 左值为真则直接返回左值
+		if isTruthy(left) {
+			return left
+		}
+		// 左值为假则返回右值
+		return right
+
+	case left.Type() != right.Type(): //对象不同
 		return newError("type mismatch: %s %s %s", left.Type(), operator, right.Type())
 
+	//字符串拼接
+	case left.Type() == object.STRING_OBJ && right.Type() == object.STRING_OBJ:
+		return evalStringInfixExpression(operator, left, right)
 	default:
 		return newError("unknown operator: %s %s %s", left.Type(), operator, right.Type())
 	}
@@ -285,11 +305,16 @@ func isError(obj object.Object) bool {
 }
 
 func evalIdentifier(node *ast.Identifier, env *object.Environment) object.Object {
-	val, ok := env.Get(node.Value)
-	if !ok {
-		return newError("identifier not found:" + node.Value)
+	//取环境绑定的值
+	if val, ok := env.Get(node.Value); ok {
+		return val
 	}
-	return val
+
+	//如果没有绑定的值，则在内置函数环境中查找
+	if builtin, ok := builtins[node.Value]; ok {
+		return builtin
+	}
+	return newError("identifier not found:" + node.Value)
 }
 
 // 辅助函数：求值所有实参
@@ -309,14 +334,19 @@ func evalExpression(exps []ast.Expression, env *object.Environment) []object.Obj
 
 // 执行函数调用
 func applyFunction(fn object.Object, args []object.Object) object.Object {
-	function, ok := fn.(*object.Function)
-	if !ok {
+
+	switch fn := fn.(type) {
+	case *object.Function: //自定义的函数
+		extendedEnv := extendFunction(fn, args) //创建局部环境
+		evaluated := Eval(fn.Body, extendedEnv) //执行函数，也就是配合环境执行函数体的内容
+		return unwarpReturnValue(evaluated)     //解包，返回函数执行后的结果
+
+	case *object.Builtin: //内置函数
+		return fn.Fn(args...)
+
+	default:
 		return newError("not a function: %s", fn.Type())
 	}
-
-	extendedEnv := extendFunction(function, args) //创建局部环境
-	evaluated := Eval(function.Body, extendedEnv) //执行函数，也就是配合环境执行函数体的内容
-	return unwarpReturnValue(evaluated)           //解包，返回函数执行后的结果
 }
 
 // 辅助函数：创建函数局部环境，绑定形参与实参
@@ -338,4 +368,16 @@ func unwarpReturnValue(obj object.Object) object.Object {
 	}
 
 	return obj
+}
+
+// 字符串拼接
+func evalStringInfixExpression(operator string, left, right object.Object) object.Object {
+	if operator != "+" {
+		return newError("unknown opearator:%s %s %s", left.Type(), operator, right.Type())
+	}
+
+	leftVal := left.(*object.String).Value
+	rightVal := right.(*object.String).Value
+
+	return &object.String{Value: leftVal + rightVal}
 }

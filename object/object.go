@@ -19,6 +19,8 @@ const (
 	RETURN_VALUE_OBJ = "RETURN_VALUE" //返回值
 	ERROR_OBJ        = "ERROR"        //错误
 	FUNCTION_OBJ     = "FUNCTION"     //函数
+	STRING_OBJ       = "STRING"       //字符串
+	BUILTIN_OBJ      = "BUILTIN"      //内置函数
 )
 
 // 对象接口
@@ -91,3 +93,21 @@ func (f *Function) Inspect() string {
 
 	return out.String()
 }
+
+// 字符串
+type String struct {
+	Value string
+}
+
+func (s *String) Type() ObjectType { return STRING_OBJ }
+func (s *String) Inspect() string  { return s.Value }
+
+// 内置函数
+type BuiltinFunction func(args ...Object) Object
+
+type Builtin struct {
+	Fn BuiltinFunction
+}
+
+func (b *Builtin) Type() ObjectType { return BOOLEAN_OBJ }
+func (b *Builtin) Inspect() string  { return "builtin function" }

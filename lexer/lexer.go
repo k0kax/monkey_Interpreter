@@ -99,6 +99,33 @@ func (l *Lexer) NextToken() token.Token {
 		tok.Literal = ""
 		tok.Type = token.EOF
 
+	case '"':
+		tok.Type = token.STRING
+		tok.Literal = l.readString()
+
+	//Todo
+	//逻辑运算符
+	case '&': //与运算
+		if l.peekChar() == '&' {
+			ch := l.ch //获取当前字符
+			l.readChar()
+			literal := string(ch) + string(l.ch) //&&
+			tok = token.Token{Type: token.AND, Literal: literal}
+		} else {
+			tok.Literal = ""
+			tok.Type = token.EOF
+		}
+	case '|': //或运算
+		if l.peekChar() == '|' {
+			ch := l.ch //获取当前字符
+			l.readChar()
+			literal := string(ch) + string(l.ch) //||
+			tok = token.Token{Type: token.OR, Literal: literal}
+		} else {
+			tok.Literal = ""
+			tok.Type = token.EOF
+		}
+
 	//检查是否是标识符
 	default:
 		if isLetter(l.ch) { //判断是否是字母
@@ -163,4 +190,18 @@ func (l *Lexer) peekChar() byte {
 	} else {
 		return l.input[l.readPosition] //返回下一个字符的位置（string位置是从0开始的）
 	}
+}
+
+// 读字符串
+func (l *Lexer) readString() string {
+	position := l.position + 1
+
+	for {
+		l.readChar()
+
+		if l.ch == '"' || l.ch == 0 {
+			break
+		}
+	}
+	return l.input[position:l.position]
 }

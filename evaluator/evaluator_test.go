@@ -130,6 +130,7 @@ func TestIfElseExpression(t *testing.T) {
 		{"if (1 > 2) { 10 }", nil},
 		{"if (1 > 2) { 10 } else { 20 }", 20},
 		{"if (1 < 2) { 10 } else { 20 }", 10},
+		{"if ((1 < 2)&&(3>5)) { 10 } else { 20 }", 20},
 	}
 
 	for _, tt := range tests {
@@ -223,6 +224,10 @@ func TestErrorHandling(t *testing.T) {
 			"foobar",
 			"identifier not found: foobar",
 		},
+		{
+			`"Hello" - "World"`,
+			"unknown operator: STRING - STRING",
+		},
 	}
 
 	for _, tt := range tests {
@@ -309,4 +314,33 @@ func TestClosures(t *testing.T) {
 		let addTwo = newAdder(2);
 		addTwo(3);`
 	testIntegerObject(t, testEval(input), 5)
+}
+
+// 测试字符串
+func TestStringLiteral(t *testing.T) {
+	input := `"Hello World!"`
+
+	evaluted := testEval(input)
+	str, ok := evaluted.(*object.String)
+	if !ok {
+		t.Fatalf("object is not String. got=%T(%+v)", evaluted, evaluted)
+	}
+
+	if str.Value != "Hello World!" {
+		t.Errorf("String has wrong value. got=%q", str.Value)
+	}
+}
+
+func TestStringConcatenation(t *testing.T) {
+	input := `"Hello"+" "+"World!"`
+
+	evaluated := testEval(input)
+	str, ok := evaluated.(*object.String)
+	if !ok {
+		t.Fatalf("object is not String. got=%T(%+v)", evaluated, evaluated)
+	}
+
+	if str.Value != "Hello World!" {
+		t.Errorf("String has wrong value. got=%q", str.Value)
+	}
 }
