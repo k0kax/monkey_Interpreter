@@ -203,24 +203,11 @@ func (b *Boolean) String() string       { return b.Token.Literal }
 
 // ---------------------------------------------------if-else--------------------------------------------
 type IfExpression struct {
-	Token       token.Token
-	Condition   Expression
-	Consequence *BlockStatement
-	Alternative *BlockStatement
-}
-
-type IfExpression struct {
 	Token           token.Token
-	Condition       Expression
+	Condition       Expression //首选项
 	Consequence     *BlockStatement
-	Alternative     []*ElseIfExpression
-	LastAlternative *BlockStatement
-}
-
-type ElseIfExpression struct {
-	Token       token.Token
-	Condition   Expression
-	Consequence *BlockStatement
+	Alternatives    []*ElIfExpression //中间选项
+	LastAlternative *BlockStatement   //最后选项
 }
 
 func (ie *IfExpression) expressionNode()      {}
@@ -228,15 +215,45 @@ func (ie *IfExpression) TokenLiteral() string { return ie.Token.Literal }
 func (ie *IfExpression) String() string {
 	var out bytes.Buffer
 
+	//写入首选项的条件和结果
 	out.WriteString("if")
+	out.WriteString(" ")
 	out.WriteString(ie.Condition.String())
 	out.WriteString(" ")
 	out.WriteString(ie.Consequence.String())
 
-	if ie.Alternative != nil {
-		out.WriteString(" else ")
-		out.WriteString(ie.Alternative.String())
+	//写入中间选项的条件和结果
+	for _, alternative := range ie.Alternatives {
+		alternative.String()
 	}
+
+	//最后选项
+	if ie.LastAlternative != nil {
+		out.WriteString(" else ")
+		out.WriteString(ie.LastAlternative.String())
+	}
+
+	return out.String()
+}
+
+// 中间选项
+type ElIfExpression struct {
+	Token       token.Token
+	Condition   Expression
+	Consequence *BlockStatement
+}
+
+func (ef *ElIfExpression) expressionNode()      {}
+func (ef *ElIfExpression) TokenLiteral() string { return ef.Token.Literal }
+func (ef *ElIfExpression) String() string {
+	var out bytes.Buffer
+
+	//写入首选项的条件和结果
+	out.WriteString("elif")
+	out.WriteString(" ")
+	out.WriteString(ef.Condition.String())
+	out.WriteString(" ")
+	out.WriteString(ef.Consequence.String())
 
 	return out.String()
 }

@@ -249,10 +249,36 @@ func evalIfExpression(ie *ast.IfExpression, env *object.Environment) object.Obje
 		return condition
 	}
 
-	if isTruthy(condition) { //条件对
+	if isTruthy(condition) { //条件对 首选项
 		return Eval(ie.Consequence, env) //执行结果
-	} else if ie.Alternative != nil { //条件不对，且备选结果不为空
-		return Eval(ie.Alternative, env) //执行备选结果
+	} //首选项条件不对，且备选结果不为空
+
+	//执行中间选项
+	for _, al := range ie.Alternatives {
+		alter_obj := evalElifExpression(al, env)
+		if alter_obj != NULL { //任何中间选项，最先正确执行的，返回它的执行结果
+			return alter_obj
+		}
+	}
+
+	//执行最后选项
+	if ie.LastAlternative != nil {
+		return Eval(ie.LastAlternative, env)
+	}
+
+	//首选项错误，有或没有中间选项，没有else的最后结果
+	return NULL
+}
+
+// elif的处理 和前面差不多
+func evalElifExpression(ef *ast.ElIfExpression, env *object.Environment) object.Object {
+	alternnative_condition := Eval(ef.Condition, env)
+	if isError(alternnative_condition) {
+		return alternnative_condition
+	}
+
+	if isTruthy(alternnative_condition) {
+		return Eval(ef.Consequence, env)
 	} else {
 		return NULL
 	}

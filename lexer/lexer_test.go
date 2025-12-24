@@ -19,10 +19,9 @@ let result = add(five, ten);
 
 if (5 < 10) {
 	return true;
-} else {
+} elif(5==10) {
 	return false;
 }
-
 10 == 10;
 10 != 9;
 "foobar"
@@ -94,7 +93,12 @@ if (5 < 10) {
 		{token.TRUE, "true"},
 		{token.SEMICOLON, ";"},
 		{token.RBRACE, "}"},
-		{token.ELSE, "else"},
+		{token.ELIF, "elif"},
+		{token.LPAREN, "("},
+		{token.INT, "5"},
+		{token.EQ, "=="},
+		{token.INT, "10"},
+		{token.RPAREN, ")"},
 		{token.LBRACE, "{"},
 		{token.RETURN, "return"},
 		{token.FALSE, "false"},

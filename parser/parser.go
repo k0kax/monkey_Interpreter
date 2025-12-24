@@ -408,7 +408,7 @@ func (p *Parser) parseGroupedExpression() ast.Expression {
 func (p *Parser) parseIfExpression() ast.Expression {
 	expression := &ast.IfExpression{Token: p.curToken}
 
-	//if部分
+	//if部分 首选
 	//识别条件
 	if !p.expectPeek(token.LPAREN) { //下一个token是左括号(，移动token，继续，进入条件识别；不是则直接退出
 		return nil
@@ -426,10 +426,17 @@ func (p *Parser) parseIfExpression() ast.Expression {
 		return nil
 	}
 
-	//写入结果
+	//写入首选结果
 	expression.Consequence = p.parseBlockStatement()
 
-	//else部分
+	//中间选项
+	for p.peekTokenIs(token.ELIF) {
+		p.nextToken()
+		elif := p.parseElIfExpression()
+		expression.Alternatives = append(expression.Alternatives, elif)
+	}
+
+	//else部分 最后选项
 	if p.peekTokenIs(token.ELSE) { //识别下一个token是else,进入else的判断；不是则直接退出
 		p.nextToken() //后移token 匹配到真正的
 
@@ -437,8 +444,33 @@ func (p *Parser) parseIfExpression() ast.Expression {
 			return nil
 		}
 
-		expression.Alternative = p.parseBlockStatement() //写入可替换结果
+		expression.LastAlternative = p.parseBlockStatement() //写入可替换结果
 	}
+
+	return expression
+}
+
+// 解析ELIF 和解析IF差不多
+func (p *Parser) parseElIfExpression() *ast.ElIfExpression {
+	expression := &ast.ElIfExpression{Token: p.curToken}
+	if !p.expectPeek(token.LPAREN) { //下一个token是左括号(，移动token，继续，进入条件识别；不是则直接退出
+		return nil
+	}
+
+	p.nextToken()                                    //token移动开始识别条件
+	expression.Condition = p.parseExpression(LOWEST) //低权限识别条件，并写入条件中
+
+	if !p.expectPeek(token.RPAREN) { //下一个token是右括号)，移动token，继续，表明条件结束
+		return nil
+	}
+
+	//识别结果
+	if !p.expectPeek(token.LBRACE) { //下一个token是左大括号{，移动token，继续，开始进行结果识别；不是则直接退出
+		return nil
+	}
+
+	//写入首选结果
+	expression.Consequence = p.parseBlockStatement()
 
 	return expression
 }

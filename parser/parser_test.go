@@ -517,7 +517,7 @@ func testBooleanLiteral(t *testing.T, exp ast.Expression, value bool) bool {
 
 // 测试if语句
 func TestIfExpression(t *testing.T) {
-	input := "if(x<y){x}else{y}"
+	input := "if(x<y){x}elif(x>y){y}else{y==x}"
 
 	l := lexer.New(input)
 	p := New(l)
@@ -555,8 +555,8 @@ func TestIfExpression(t *testing.T) {
 		return
 	}
 
-	if exp.Alternative == nil {
-		t.Errorf("exp.Alternative.Statements was not nil. got=%+v", exp.Alternative)
+	if exp.Alternatives == nil {
+		t.Errorf("exp.Alternative.Statements was not nil. got=%+v", exp.Alternatives)
 	}
 }
 
