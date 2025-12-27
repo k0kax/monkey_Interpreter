@@ -47,6 +47,7 @@ const (
 	PRODUCT     //*
 	PREFIX      //-X or !x
 	CALL        //函数func
+	INDEX       //数组索引
 )
 
 // 优先级表
@@ -62,6 +63,7 @@ var precedences = map[token.TokenType]int{
 	token.SLASH:    PRODUCT,     //除/
 	token.ASTERISK: PRODUCT,     //*
 	token.LPAREN:   CALL,
+	token.LBRACKET: INDEX,
 }
 
 // 实例化语法分析器
@@ -115,6 +117,15 @@ func New(l *lexer.Lexer) *Parser {
 	//解析逻辑运算符
 	p.registerInfix(token.AND, p.parseInfixExpression)
 	p.registerInfix(token.OR, p.parseInfixExpression)
+
+	//解析数组
+	p.registerPrefix(token.LBRACKET, p.parseArrayLiteral)
+
+	//解析索引
+	p.registerInfix(token.LBRACKET, p.parseIndexExpression)
+
+	//解析哈希表
+	p.registerPrefix(token.LBRACE, p.parseHashLiteral)
 	return p
 }
 
@@ -546,38 +557,89 @@ func (p *Parser) parseFunctionParameters() []*ast.Identifier {
 }
 
 // 解析函数：调用函数表达式
+// 解析函数调用的各个参数
 func (p *Parser) parseCallExpression(function ast.Expression) ast.Expression {
 	exp := &ast.CallExpression{Token: p.curToken, Function: function}
-	exp.Arguments = p.parseCallArguments()
+	exp.Arguments = p.parseExpressionList(token.RPAREN)
 	return exp
-}
-
-// 解析函数调用的各个参数
-func (p *Parser) parseCallArguments() []ast.Expression {
-	args := []ast.Expression{}
-
-	if p.peekTokenIs(token.RPAREN) { //下一个token是右括号，说明解析完所有参数
-		p.nextToken()
-		return args
-	}
-
-	p.nextToken()
-	args = append(args, p.parseExpression(LOWEST))
-
-	for p.peekTokenIs(token.COMMA) {
-		p.nextToken()
-		p.nextToken()
-		args = append(args, p.parseExpression(LOWEST))
-	}
-
-	if !p.expectPeek(token.RPAREN) { //下一个token是右括号，说明解析完所有参数，并后移一位
-		return nil
-	}
-
-	return args
 }
 
 // 解析函数 字符串
 func (p *Parser) parseStringLiteral() ast.Expression {
 	return &ast.StringLiteral{Token: p.curToken, Value: p.curToken.Literal}
+}
+
+// 解析数组
+func (p *Parser) parseArrayLiteral() ast.Expression {
+	array := &ast.ArrayLiteral{Token: p.curToken}
+
+	array.Elements = p.parseExpressionList(token.RBRACKET) //遇到]结束
+
+	return array
+}
+
+func (p *Parser) parseExpressionList(end token.TokenType) []ast.Expression {
+	list := []ast.Expression{}
+
+	if p.peekTokenIs(end) {
+		p.nextToken()
+		return list
+	}
+
+	p.nextToken()
+	list = append(list, p.parseExpression(LOWEST))
+
+	for p.peekTokenIs(token.COMMA) {
+		p.nextToken()
+		p.nextToken()
+		list = append(list, p.parseExpression(LOWEST))
+	}
+
+	if !p.expectPeek(end) {
+		return nil
+	}
+
+	return list
+}
+
+// 解析索引
+func (p *Parser) parseIndexExpression(left ast.Expression) ast.Expression {
+	exp := &ast.IndexExpression{Token: p.curToken, Left: left}
+
+	p.nextToken()
+	exp.Index = p.parseExpression(LOWEST)
+
+	if !p.expectPeek(token.RBRACKET) {
+		return nil
+	}
+	return exp
+}
+
+// 解析哈希表
+func (p *Parser) parseHashLiteral() ast.Expression {
+	hash := &ast.HashLiteral{Token: p.curToken}
+	hash.Pairs = make(map[ast.Expression]ast.Expression)
+
+	for !p.peekTokenIs(token.RBRACE) {
+		p.nextToken()
+		key := p.parseExpression(LOWEST) //取键值对的键
+
+		if !p.expectPeek(token.COLON) { //遇到:继续，否则说明键值对不完整，退出
+			return nil
+		}
+
+		p.nextToken()
+		value := p.parseExpression(LOWEST) //取键值对的值
+
+		hash.Pairs[key] = value //写入键值对
+		if !p.peekTokenIs(token.RBRACE) && !p.expectPeek(token.COMMA) {
+			return nil
+		}
+	}
+
+	if !p.expectPeek(token.RBRACE) { //遇到}则退出
+		return nil
+	}
+
+	return hash
 }

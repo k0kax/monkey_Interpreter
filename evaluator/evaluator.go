@@ -104,8 +104,33 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 		//调用函数，并传入求值后得到的实参
 		return applyFunction(function, args)
 
+	//处理字符串
 	case *ast.StringLiteral:
 		return &object.String{Value: node.Value}
+
+	//处理数组
+	case *ast.ArrayLiteral:
+		elements := evalExpression(node.Elements, env)
+		if len(elements) == 1 && isError(elements[0]) {
+			return elements[0]
+		}
+		return &object.Array{Elements: elements}
+
+	//根据索引获取数组值
+	case *ast.IndexExpression:
+		left := Eval(node.Left, env)
+		if isError(left) {
+			return left
+		}
+		index := Eval(node.Index, env)
+		if isError(index) {
+			return index
+		}
+		return evalIndexExpresssion(left, index)
+
+	//哈希表
+	case *ast.HashLiteral:
+		return evalHashLiteral(node, env)
 	}
 
 	return nil
@@ -406,4 +431,72 @@ func evalStringInfixExpression(operator string, left, right object.Object) objec
 	rightVal := right.(*object.String).Value
 
 	return &object.String{Value: leftVal + rightVal}
+}
+
+// 索引求值
+func evalIndexExpresssion(left, index object.Object) object.Object {
+	switch {
+	case left.Type() == object.ARRAY_OBJ && index.Type() == object.INTEGER_OBJ:
+		return evalArrayIndexExpresssion(left, index)
+	case left.Type() == object.HASH_OBJ:
+		return evalHashIndexExpression(left, index)
+	default:
+		return newError("index operator not supported: %s", left.Type())
+	}
+}
+
+// 数组索引 根据索引获取具体的值
+func evalArrayIndexExpresssion(array, index object.Object) object.Object {
+	arrayObject := array.(*object.Array)
+	idx := index.(*object.Integer).Value
+	max := int64(len(arrayObject.Elements) - 1)
+
+	if idx < 0 || idx > max {
+		return NULL
+	}
+	return arrayObject.Elements[idx]
+}
+
+// 哈希表求值
+func evalHashLiteral(node *ast.HashLiteral, env *object.Environment) object.Object {
+	pairs := make(map[object.HashKey]object.HashPair)
+
+	for keyNode, valueNode := range node.Pairs { //取出真实键、值
+		key := Eval(keyNode, env) //解析键
+		if isError(key) {
+			return key
+		}
+
+		hashKey, ok := key.(object.Hashable)
+		if !ok {
+			return newError("unusable as hash key:%s", key.Type())
+		}
+
+		value := Eval(valueNode, env) //解析值
+		if isError(value) {
+			return value
+		}
+
+		hashed := hashKey.HashKey() //执行外层键值函数HashKey()获取HashKey实例作为哈希值
+		pairs[hashed] = object.HashPair{Key: key, Value: value}
+	}
+
+	return &object.Hash{Pairs: pairs}
+}
+
+// 哈希表索引
+func evalHashIndexExpression(hash, index object.Object) object.Object {
+	hashObject := hash.(*object.Hash)
+
+	key, ok := index.(object.Hashable) //取出外层键值函数
+	if !ok {
+		return newError("unusable as hash key: %s", index.Type())
+	}
+
+	pair, ok := hashObject.Pairs[key.HashKey()] //执行外层键值，并据此取出对应的键值对
+	if !ok {
+		return NULL
+	}
+
+	return pair.Value
 }

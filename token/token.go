@@ -32,12 +32,14 @@ const (
 	COMMA     = ","
 	SEMICOLON = ";"
 
-	LT     = "<"
-	GT     = ">"
-	LPAREN = "("
-	RPAREN = ")"
-	LBRACE = "{"
-	RBRACE = "}"
+	LT       = "<"
+	GT       = ">"
+	LPAREN   = "("
+	RPAREN   = ")"
+	LBRACE   = "{"
+	RBRACE   = "}"
+	LBRACKET = "["
+	RBRACKET = "]"
 
 	// 关键字
 	FUNCTION = "FUNCTION"
@@ -61,6 +63,9 @@ const (
 	//逻辑运算符
 	AND = "&&" //和
 	OR  = "||" //或
+
+	//
+	COLON = ":"
 )
 
 //！-/*5；

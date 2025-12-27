@@ -125,6 +125,12 @@ func (l *Lexer) NextToken() token.Token {
 			tok.Literal = ""
 			tok.Type = token.EOF
 		}
+	case '[':
+		tok = newToken(token.LBRACKET, l.ch)
+	case ']':
+		tok = newToken(token.RBRACKET, l.ch)
+	case ':':
+		tok = newToken(token.COLON, l.ch)
 
 	//检查是否是标识符
 	default:

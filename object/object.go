@@ -5,6 +5,7 @@ package object
 import (
 	"bytes"
 	"fmt"
+	"hash/fnv"
 	"monkey_Interpreter/ast"
 	"strings"
 )
@@ -21,6 +22,8 @@ const (
 	FUNCTION_OBJ     = "FUNCTION"     //函数
 	STRING_OBJ       = "STRING"       //字符串
 	BUILTIN_OBJ      = "BUILTIN"      //内置函数
+	ARRAY_OBJ        = "ARRAY"        //数组
+	HASH_OBJ         = "HASH"         //哈希表
 )
 
 // 对象接口
@@ -111,3 +114,85 @@ type Builtin struct {
 
 func (b *Builtin) Type() ObjectType { return BOOLEAN_OBJ }
 func (b *Builtin) Inspect() string  { return "builtin function" }
+
+// 数组
+type Array struct {
+	Elements []Object
+}
+
+func (ao *Array) Type() ObjectType { return ARRAY_OBJ }
+func (ao *Array) Inspect() string {
+	var out bytes.Buffer
+
+	elements := []string{}
+	for _, e := range ao.Elements {
+		elements = append(elements, e.Inspect())
+	}
+
+	out.WriteString("[")
+	out.WriteString(strings.Join(elements, ","))
+	out.WriteString("]")
+
+	return out.String()
+}
+
+// 哈希表的外层键值
+type HashKey struct {
+	Type  ObjectType
+	Value uint64
+}
+
+// 布尔
+func (b *Boolean) HashKey() HashKey {
+	var value uint64
+
+	if b.Value {
+		value = 1
+	} else {
+		value = 0
+	}
+
+	return HashKey{Type: b.Type(), Value: value}
+}
+
+// 整数
+func (i *Integer) HashKey() HashKey {
+	return HashKey{Type: i.Type(), Value: uint64(i.Value)}
+}
+
+// 字符串
+func (s *String) HashKey() HashKey {
+	h := fnv.New64a()
+	h.Write([]byte(s.Value))
+	return HashKey{Type: s.Type(), Value: h.Sum64()} //可能哈希碰撞
+}
+
+type Hashable interface { //外层键值函数接口
+	HashKey() HashKey
+}
+
+// 哈希表的真实键值对
+type HashPair struct {
+	Key   Object
+	Value Object
+}
+
+type Hash struct {
+	Pairs map[HashKey]HashPair
+}
+
+func (h *Hash) Type() ObjectType { return HASH_OBJ }
+func (h *Hash) Inspect() string {
+	var out bytes.Buffer
+
+	pairs := []string{}
+	for _, pair := range h.Pairs {
+		pairs = append(pairs, fmt.Sprintf("%s:%s", pair.Key.Inspect(), pair.Value.Inspect()))
+	}
+
+	out.WriteString("{")
+	out.WriteString(strings.Join(pairs, ","))
+	out.WriteString("}")
+
+	return out.String()
+}
